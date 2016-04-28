@@ -15,6 +15,7 @@ import com.firebase.client.Firebase;
 import com.firebase.client.FirebaseError;
 import com.firebase.client.ValueEventListener;
 import com.udacity.firebase.shoppinglistplusplus.R;
+import com.udacity.firebase.shoppinglistplusplus.model.ShoppingList;
 import com.udacity.firebase.shoppinglistplusplus.utils.Constants;
 
 
@@ -28,7 +29,7 @@ public class ShoppingListsFragment extends Fragment {
     private static final String LOG_TAG = ShoppingListsFragment.class.getSimpleName();
 
     private ListView mListView;
-    private TextView mTextViewListName;
+    private TextView mTextViewListName, mTextViewOwner;
 
     public ShoppingListsFragment() {
         /* Required empty public constructor */
@@ -70,12 +71,18 @@ public class ShoppingListsFragment extends Fragment {
         View rootView = inflater.inflate(R.layout.fragment_shopping_lists, container, false);
         initializeScreen(rootView);
 
-        Firebase listNameRef = new Firebase(Constants.FIREBASE_URL).child("listName");
-        listNameRef.addValueEventListener(new ValueEventListener() {
+        Firebase refListName = new Firebase(Constants.FIREBASE_URL).child("activeList");
+        refListName.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
-               String listName = (String) dataSnapshot.getValue();
-                mTextViewListName.setText(listName);
+               ShoppingList shoppingList = dataSnapshot.getValue(ShoppingList.class);
+
+                // If there was no data at the location we add the listener, then
+                //shoppingLIst will be null.
+                if (shoppingList != null) {
+                    mTextViewListName.setText(shoppingList.getListName());
+                    mTextViewOwner.setText(shoppingList.getOwner());
+                }
             }
 
             @Override
@@ -111,5 +118,6 @@ public class ShoppingListsFragment extends Fragment {
         // Get the TextView in the single_active_list layout
         // that has the id text_view_list_name
         mTextViewListName  = (TextView) rootView.findViewById(R.id.text_view_list_name);
+        mTextViewOwner = (TextView) rootView.findViewById(R.id.text_view_created_by_user);
     }
 }

@@ -15,6 +15,7 @@ import android.widget.TextView;
 
 import com.firebase.client.Firebase;
 import com.udacity.firebase.shoppinglistplusplus.R;
+import com.udacity.firebase.shoppinglistplusplus.model.ShoppingList;
 import com.udacity.firebase.shoppinglistplusplus.utils.Constants;
 
 /**
@@ -99,7 +100,10 @@ public class AddListDialogFragment extends DialogFragment {
         // Go to the "listname" child node of the root node.
         // This will create the node for you if it doesn't already exist.
         // Then using the setValue menu it will set value the node to userEnterName.
-        ref.child("listName").setValue(userEnteredName);
+        String owner = "Anonymous Owner";
+        ShoppingList currentList = new ShoppingList(userEnteredName, owner);
+        ref.child("activeList").setValue(currentList);
+        //ref.child("listName").setValue(userEnteredName);
 
     }
 
