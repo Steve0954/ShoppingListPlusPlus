@@ -10,7 +10,7 @@ public class ShoppingList {
     public ShoppingList() {
     }
 
-    public ShoppingList(String owner, String listName) {
+    public ShoppingList(String listName, String owner) {
         this.owner = owner;
         this.listName = listName;
     }
