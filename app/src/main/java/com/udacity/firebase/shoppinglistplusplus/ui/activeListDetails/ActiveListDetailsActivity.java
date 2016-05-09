@@ -3,21 +3,28 @@ package com.udacity.firebase.shoppinglistplusplus.ui.activeListDetails;
 import android.app.DialogFragment;
 import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ListView;
 
+import com.firebase.client.DataSnapshot;
+import com.firebase.client.Firebase;
+import com.firebase.client.FirebaseError;
+import com.firebase.client.ValueEventListener;
 import com.udacity.firebase.shoppinglistplusplus.R;
 import com.udacity.firebase.shoppinglistplusplus.model.ShoppingList;
 import com.udacity.firebase.shoppinglistplusplus.ui.BaseActivity;
+import com.udacity.firebase.shoppinglistplusplus.utils.Constants;
 
 /**
  * Represents the details screen for the selected shopping list
  */
 public class ActiveListDetailsActivity extends BaseActivity {
     private static final String LOG_TAG = ActiveListDetailsActivity.class.getSimpleName();
+    private Firebase mActiveListRef;
     private ListView mListView;
     private ShoppingList mShoppingList;
 
@@ -27,9 +34,46 @@ public class ActiveListDetailsActivity extends BaseActivity {
         setContentView(R.layout.activity_active_list_details);
 
         /**
+         * Create Firebase reference
+         */
+
+        mActiveListRef = new Firebase(Constants.FIREBASE_URL_ACTIVE_LIST);
+
+        /**
          * Link layout elements from XML and setup the toolbar
          */
         initializeScreen();
+
+        mActiveListRef.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot snapshot) {
+                ShoppingList shoppingList = snapshot.getValue(ShoppingList.class);
+
+                // Check to see if shoppingList is null, if so, finish and return
+                if (shoppingList == null) {
+                    finish();
+                    return;
+                }
+
+                // Create reference to shoppingList
+                mShoppingList = shoppingList;
+
+                // Is the option menu valid?
+                invalidateOptionsMenu();
+
+                // Set title of detail screen to shoppingList title.
+                setTitle(shoppingList.getListName());
+            }
+
+            @Override
+            public void onCancelled(FirebaseError firebaseError) {
+                // On Firebase read error log message
+                Log.e(LOG_TAG,
+                        getString(R.string.log_error_the_read_failed) +
+                            firebaseError.getMessage());
+
+            }
+        });
 
         /* Calling invalidateOptionsMenu causes onCreateOptionsMenu to be called */
         invalidateOptionsMenu();
