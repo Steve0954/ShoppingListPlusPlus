@@ -1,6 +1,7 @@
 package com.udacity.firebase.shoppinglistplusplus;
 
 import com.firebase.client.Firebase;
+import com.firebase.client.Logger;
 
 /**
  * Includes one-time initialization of Firebase related code
@@ -12,6 +13,7 @@ public class ShoppingListApplication extends android.app.Application {
         super.onCreate();
         /* Initialize Firebase */
         Firebase.setAndroidContext(this);
+        Firebase.getDefaultConfig().setLogLevel(Logger.Level.DEBUG);
     }
 
 }
