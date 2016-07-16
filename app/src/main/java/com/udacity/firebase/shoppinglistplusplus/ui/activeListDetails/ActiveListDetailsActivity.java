@@ -17,6 +17,7 @@ import com.firebase.client.FirebaseError;
 import com.firebase.client.ValueEventListener;
 import com.udacity.firebase.shoppinglistplusplus.R;
 import com.udacity.firebase.shoppinglistplusplus.model.ShoppingList;
+import com.udacity.firebase.shoppinglistplusplus.model.ShoppingListItem;
 import com.udacity.firebase.shoppinglistplusplus.ui.BaseActivity;
 import com.udacity.firebase.shoppinglistplusplus.utils.Constants;
 
@@ -26,6 +27,7 @@ import com.udacity.firebase.shoppinglistplusplus.utils.Constants;
 public class ActiveListDetailsActivity extends BaseActivity {
     private static final String LOG_TAG = ActiveListDetailsActivity.class.getSimpleName();
     private Firebase mActiveListRef;
+    private ActiveListItemAdapter mActiveListItemAdapter;
     private ListView mListView;
     private String mListId;
     private ShoppingList mShoppingList;
@@ -51,12 +53,21 @@ public class ActiveListDetailsActivity extends BaseActivity {
          * Create Firebase references
          */
         mActiveListRef = new Firebase(Constants.FIREBASE_URL_ACTIVE_LISTS).child(mListId);
+        Firebase listItemsRef = new Firebase(Constants.FIREBASE_URL_SHOPPING_LISTS_ITEMS).child(mListId);
 
 
         /**
          * Link layout elements from XML and setup the toolbar
          */
         initializeScreen();
+
+        /**
+         * Setup the adapter
+         */
+        mActiveListItemAdapter = new ActiveListItemAdapter(this, ShoppingListItem.class,
+           R.layout.single_active_list_item, listItemsRef );
+        /* Create ActiveListItemAdapter and set to listView */
+        mListView.setAdapter(mActiveListItemAdapter);
 
         /**
          * Save the most recent version of current shopping list into mShoppingList instance
@@ -184,6 +195,7 @@ public class ActiveListDetailsActivity extends BaseActivity {
     @Override
     public void onDestroy() {
         super.onDestroy();
+        mActiveListItemAdapter.cleanup();
     }
 
     /**

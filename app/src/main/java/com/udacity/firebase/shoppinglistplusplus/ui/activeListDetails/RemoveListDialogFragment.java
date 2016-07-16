@@ -5,11 +5,15 @@ import android.app.DialogFragment;
 import android.content.DialogInterface;
 import android.os.Bundle;
 import android.support.v7.app.AlertDialog;
+import android.util.Log;
 
 import com.firebase.client.Firebase;
+import com.firebase.client.FirebaseError;
 import com.udacity.firebase.shoppinglistplusplus.R;
 import com.udacity.firebase.shoppinglistplusplus.model.ShoppingList;
 import com.udacity.firebase.shoppinglistplusplus.utils.Constants;
+
+import java.util.HashMap;
 
 /**
  * Lets the user remove active shopping list
@@ -62,11 +66,25 @@ public class RemoveListDialogFragment extends DialogFragment {
     }
 
     private void removeList() {
-        /* Get the location to remove from */
-        Firebase listToRemoveRef = new Firebase(Constants.FIREBASE_URL_ACTIVE_LISTS).child(mListId);
-        /* Remove the value */
-        listToRemoveRef.removeValue();
+        /**
+         * Create map and fill it in with deep path multi write operations list
+         */
+        HashMap<String, Object> removeListData = new HashMap<String, Object>();
+        removeListData.put("/" + Constants.FIREBASE_LOCATION_ACTIVE_LISTS + "/"
+                + mListId, null);
+        removeListData.put("/" + Constants.FIREBASE_LOCATION_SHOPPING_LISTS_ITEMS + "/"
+                + mListId, null);
+        Firebase firebaseRef = new Firebase(Constants.FIREBASE_URL);
 
-    }
+        /* Do a deep path update */
+        firebaseRef.updateChildren(removeListData, new Firebase.CompletionListener() {
+            @Override
+            public void onComplete(FirebaseError firebaseError, Firebase firebase) {
+                 if(firebaseError != null){
+                     Log.e(LOG_TAG, getString(R.string.log_error_updating_data) + firebaseError.getMessage());
+                 }
+            }
+        });
+   }
 
 }
