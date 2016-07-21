@@ -72,7 +72,7 @@ public class RemoveListDialogFragment extends DialogFragment {
         HashMap<String, Object> removeListData = new HashMap<String, Object>();
         removeListData.put("/" + Constants.FIREBASE_LOCATION_ACTIVE_LISTS + "/"
                 + mListId, null);
-        removeListData.put("/" + Constants.FIREBASE_LOCATION_SHOPPING_LISTS_ITEMS + "/"
+        removeListData.put("/" + Constants.FIREBASE_LOCATION_SHOPPING_LIST_ITEMS + "/"
                 + mListId, null);
         Firebase firebaseRef = new Firebase(Constants.FIREBASE_URL);
 

@@ -71,7 +71,7 @@ public class AddListItemDialogFragment extends EditListDialogFragment {
                 (HashMap<String, Object>) new ObjectMapper().convertValue(itemToAddObject, Map.class);
 
         /* Add the item to the update map */
-        updatedItemToAddMap.put("/" + Constants.FIREBASE_LOCATION_SHOPPING_LISTS_ITEMS + "/"
+        updatedItemToAddMap.put("/" + Constants.FIREBASE_LOCATION_SHOPPING_LIST_ITEMS + "/"
                 + mListId + "/" + itemId, itemToAdd);
 
         /* Make the timestamp for last changed */
