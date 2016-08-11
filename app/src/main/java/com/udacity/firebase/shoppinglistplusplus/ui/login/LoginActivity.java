@@ -15,6 +15,8 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.firebase.client.AuthData;
+import com.firebase.client.Firebase;
+import com.firebase.client.FirebaseError;
 import com.google.android.gms.auth.GoogleAuthException;
 import com.google.android.gms.auth.GoogleAuthUtil;
 import com.google.android.gms.auth.UserRecoverableAuthException;
@@ -28,6 +30,8 @@ import com.google.android.gms.common.SignInButton;
 import com.google.android.gms.common.api.Scope;
 import com.udacity.firebase.shoppinglistplusplus.R;
 import com.udacity.firebase.shoppinglistplusplus.ui.BaseActivity;
+import com.udacity.firebase.shoppinglistplusplus.ui.MainActivity;
+import com.udacity.firebase.shoppinglistplusplus.utils.Constants;
 
 import java.io.IOException;
 
@@ -39,6 +43,8 @@ public class LoginActivity extends BaseActivity {
     private static final String LOG_TAG = LoginActivity.class.getSimpleName();
     /* A dialog that is presented until the Firebase authentication finished. */
     private ProgressDialog mAuthProgressDialog;
+    /* References to Firebase */
+    private Firebase mFirebaseRef;
     private EditText mEditTextEmailInput, mEditTextPasswordInput;
 
     /**
@@ -55,6 +61,11 @@ public class LoginActivity extends BaseActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
+
+        /**
+         * Create Firebase references
+         */
+        mFirebaseRef = new Firebase(Constants.FIREBASE_URL);
 
         /**
          * Link layout elements from XML and setup progress dialog
@@ -133,7 +144,85 @@ public class LoginActivity extends BaseActivity {
      * Sign in with Password provider (used when user taps "Done" action on keyboard)
      */
     public void signInPassword() {
+        /**
+         * Validate email and password entry and authenticate
+         */
+        String email = mEditTextEmailInput.getText().toString();
+        String password = mEditTextPasswordInput.getText().toString();
+
+        /**
+         * If email and password are not empty show progress dialog and try to authenticate
+         */
+        if (email.equals("")) {
+            mEditTextEmailInput.setError(getString(R.string.error_cannot_be_empty));
+            return;
+        }
+
+        if (password.equals("")) {
+            mEditTextPasswordInput.setError(getString(R.string.error_cannot_be_empty));
+            return;
+        }
+
+        mAuthProgressDialog.show();
+        mFirebaseRef.authWithPassword(email, password, new MyAuthResultHandler(Constants.PASSWORD_PROVIDER));
     }
+
+    /**
+     * Handle user authentication that was initiated with mFirebaseRef.authWithPassword
+     * or mFirebaseRef.authWithOAuthToken
+     */
+    private class MyAuthResultHandler implements Firebase.AuthResultHandler {
+
+        private final String provider;
+
+        public  MyAuthResultHandler(String provider) {
+            this.provider = provider;
+        }
+
+        /**
+         * On successful authentication call setAuthenticated if it was not already
+         * called in
+         */
+        @Override
+        public void onAuthenticated(AuthData authData) {
+            mAuthProgressDialog.dismiss();
+            Log.i(LOG_TAG, provider + " " + getString(R.string.log_message_auth_successful));
+            if (authData != null) {
+                /* Go to the main activity */
+                Intent intent = new Intent(LoginActivity.this, MainActivity.class);
+                intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                startActivity(intent);
+                finish();
+            }
+        }
+
+        @Override
+        public void onAuthenticationError(FirebaseError firebaseError) {
+            mAuthProgressDialog.dismiss();
+
+            /**
+             * Use utility method to check the network connection state
+             * Show "No network connection" if there is no connection
+             * Show Firebase specific error message otherwise
+             */
+            switch (firebaseError.getCode()) {
+                case FirebaseError.INVALID_EMAIL:
+                case FirebaseError.USER_DOES_NOT_EXIST:
+                    mEditTextEmailInput.setError(getString(R.string.error_message_email_issue));
+                    break;
+                case FirebaseError.INVALID_PASSWORD:
+                    mEditTextPasswordInput.setError(firebaseError.getMessage());
+                    break;
+                case  FirebaseError.NETWORK_ERROR:
+                    showErrorToast(getString(R.string.error_message_failed_sign_in_no_network));
+                    break;
+                default:
+                    showErrorToast(firebaseError.toString());
+            }
+        }
+
+    }
+
 
     /**
      * Helper method that makes sure a user is created if the user
@@ -148,7 +237,7 @@ public class LoginActivity extends BaseActivity {
      * logs in with Firebase's Google login provider.
      * @param authData AuthData object returned from onAuthenticated
      */
-    private void setAuthenticatedUserGoogle(AuthData authData){
+    private void setAuthenticatedUserGoogle(AuthData authData) {
 
     }
 
